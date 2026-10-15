@@ -44,6 +44,10 @@ def prepare_workflow(
         if not isinstance(inputs, dict) or field not in inputs:
             raise ValueError(f"Missing input {field} for {role}: {node_id}")
         inputs[field] = value
+    output_id = mapping.get("output")
+    output = graph.get(output_id) if output_id else None
+    if not isinstance(output, dict) or output.get("class_type") != "SaveImage":
+        raise ValueError(f"Invalid SaveImage mapping: {output_id}")
     return graph
 
 
@@ -69,7 +73,7 @@ class ComfyClient:
                 if result is not None:
                     status = result.get("status", {})
                     if status.get("status_str") != "success":
-                        raise ComfyExecutionError(f"Workflow status: {str(status)[:800]}")
+                        raise ComfyExecutionError(f"Workflow status: {str(status)[:1200]}")
                     images = result.get("outputs", {}).get(output_node, {}).get("images", [])
                     if not images:
                         raise ComfyExecutionError(
